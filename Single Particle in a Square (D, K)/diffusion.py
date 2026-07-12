@@ -1,4 +1,3 @@
-import scipy
 from scipy.optimize import brentq
 import numpy as np
 import matplotlib.pyplot as plt
