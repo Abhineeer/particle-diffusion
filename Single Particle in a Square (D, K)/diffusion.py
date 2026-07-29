@@ -79,7 +79,10 @@ y_vals = np.linspace(0, 1, 100)
 X_grid, Y_grid = np.meshgrid(x_vals, y_vals)
 
 times = [0.01, 0.05, 0.1, 0.5]
-t_vals = np.linspace(0.0001, 5, 100)
+t_vals = np.concatenate([
+    np.linspace(0.001, 0.5, 150),   # dense in the fast-changing early window
+    np.linspace(0.5, 5, 60)[1:]     # coarser for the slow decay tail
+])
 
 def S(t, eigenvalues, h, D):
     Z = P(X_grid, Y_grid, t, eigenvalues, h, D)
@@ -113,4 +116,5 @@ if __name__ == "__main__":
     plt.plot(t_vals, J_vals)
     plt.xlabel('t'); plt.ylabel('J')
     plt.title('Absorption Flux')
+    plt.savefig('Single Particle in a Square (D, K)/absorption_flux.png')
     plt.show()
