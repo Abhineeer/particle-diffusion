@@ -1,0 +1,12 @@
+First-passage times: b = 2, release x0/L = 1.0, N = 75, M = 100,000
+(time in units of L^2/D)
+
+quantity            measured     exact
+mean                  1.5026    1.5000
+std                   1.1211    1.1180
+median                1.1858    1.1840
+tail decay rate       0.9101    0.9126
+
+mean: SE = 0.0035, z = +0.74
+peak of f (analytic): 0.6410
+checks: S(0.005) = 1.000000 (should be 1), exact mean vs Eq.(11) value 1.5000

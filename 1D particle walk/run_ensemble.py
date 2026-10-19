@@ -28,7 +28,7 @@ def run_ensemble(b, N, n_walkers, start="vertex"):
 
 
 if __name__ == "__main__":
-    b = 6
+    b = 10
     N = 100
     n_walkers = 20_000
 

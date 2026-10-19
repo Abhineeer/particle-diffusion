@@ -20,7 +20,7 @@ N = 100
 n_walkers = 40_000
 dt = (L / N) ** 2 / (2 * D)
 
-b_values = [1, 2, 3, 4, 5, 6, 10, 100, 1000]
+b_values = [1, 2, 3, 4, 5, 6, 10, 12, 14, 16, 18]
 tmax = 4.0
 tgrid = np.linspace(0, tmax, 400)
 kgrid = tgrid / dt                      # same grid in lattice steps
