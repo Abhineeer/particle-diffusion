@@ -15,6 +15,10 @@ the vertex steps onto a uniformly chosen edge, each with probability
 1/(b+1). Note the trunk is one of the choices, so it is 1/(b+1), not
 1/b.
 
+N is the RESOLUTION of each edge, not its length. Every edge has physical
+length L (default 1), so converting steps to time is
+lattice.to_time(steps, N).
+
 Release point is a parameter because it changes what you measure:
     "vertex"    n = 0 on the trunk. This is the start for which
                 h_V = 1/(1+b) is defined.
@@ -22,6 +26,7 @@ Release point is a parameter because it changes what you measure:
 """
 
 import numpy as np
+import lattice
 
 TRUNK = 0
 
@@ -107,7 +112,7 @@ def h_vertex_exact(b):
 
 def mfpt_vertex_exact(b, N):
     """
-    Mean steps to absorption starting from the vertex.
+    Mean STEPS to absorption starting from the vertex.
 
     T(n) = -n^2 + A n + T_V on each edge. The reflecting trunk tip gives
     A = 2N + 1; the absorbing branch tip pins the branch constant. Averaging
@@ -117,10 +122,25 @@ def mfpt_vertex_exact(b, N):
 
     For b = 1 this is N(3N + 1), which is the exact answer for a plain
     segment of length 2N started at its midpoint. Good consistency check.
-
-    In physical time this is L^2 * (1/2 + 1/b) / D to leading order.
     """
     return N * (1 + 2*N + b*N) / b
+
+
+def mfpt_vertex_continuum(b, L=lattice.L_DEFAULT):
+    """
+    The continuum answer, from the slope balance at the vertex.
+
+    Solving -D u'' = 1 on every edge with u'(L) = 0 on the trunk and
+    u(L) = 0 on each branch, then imposing that the outward slopes sum to
+    zero at the vertex:
+
+        u_V = (L^2 / D) * (1/2 + 1/b)
+
+    The 1/b term is the entire b-dependence and it dies, so u_V saturates
+    at L^2/(2D): at large b the vertex stops being a junction and acts
+    like an absorber.
+    """
+    return L**2 * (0.5 + 1.0/b) / lattice.D
 
 
 def mfpt_trunktip_exact(b, N):

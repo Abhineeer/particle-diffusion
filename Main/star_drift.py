@@ -15,19 +15,37 @@ THE VERTEX RULE IS AN OPEN QUESTION
 How a current divides at a junction is exactly what has not been settled
 yet, so it is a parameter here, not a hardcoded choice:
 
-  split = "flux"   the trunk carries v, each branch carries v/b.
-                   Volumetric flux is conserved if every edge has the same
-                   cross-section. This is the incompressible guess.
+Volumetric flux conservation at the vertex says
 
-  split = "equal"  every branch carries the same v as the trunk. Simpler,
-                   but b branches each carrying v cannot be fed by one
-                   trunk carrying v, so flux is NOT conserved.
+    A_t * v_t  =  b * A_1 * v_1      ->      v_1 = v_t / beta
+
+with
+
+    beta = b * A_1 / A_t
+
+the ratio of total branch cross-section to trunk cross-section. beta is
+the ONE parameter, and it is a geometric fact about the vessels, not a
+modelling choice between two rules:
+
+    beta = b   every branch has the SAME cross-section as the trunk, so
+               the total area grows b-fold and each branch flows at v/b.
+    beta = 1   the branch areas SUM to the trunk area, so each branch
+               flows at the same v as the trunk. This is what 3D flow
+               work finds outside special geometries.
+
+Both conserve flux. They differ only in how the cross-section is divided,
+which is measurable from vessel data.
 
 The branching choice AT the vertex is left uniform over the b+1 edges,
 i.e. the Kirchhoff rule from pure diffusion. Whether a current should also
-bias that choice is part of the same open question.
+bias that choice is a separate open question.
 
-Pe is quoted for the TRUNK: Pe = L*v/D with L = N*a, so eps_trunk = Pe/(2N).
+UNITS
+-----
+L = 1 and D = 1, so Pe = L*v/D = v exactly: the Peclet number IS the flow
+speed. N is the resolution of each edge, and the coin bias is
+
+    eps = v * a / (2D) = Pe / (2N)
 """
 
 import numpy as np
@@ -36,21 +54,21 @@ import lattice
 TRUNK = 0
 
 
-def branch_eps(eps_trunk, b, split):
-    if split == "flux":
-        return eps_trunk / b
-    elif split == "equal":
-        return eps_trunk
-    raise ValueError("split must be 'flux' or 'equal'")
-
-
-def run_many(b, N, n_walkers, rng, Pe=0.0, split="flux"):
+def run_many(b, N, n_walkers, rng, Pe=0.0, beta=None):
     """
     Release at the vertex, walk until absorbed on a branch tip.
+
+    Pe   the trunk Peclet number, which with L = D = 1 is just v.
+    beta total branch area over trunk area. Defaults to b, meaning every
+         branch has the same cross-section as the trunk. beta = 1 means
+         the branch areas sum to the trunk area.
+
     Returns (touched_trunk, steps).
     """
+    if beta is None:
+        beta = float(b)
     eps_t = Pe / (2.0 * N)
-    eps_b = branch_eps(eps_t, b, split)
+    eps_b = eps_t / beta
     if max(eps_t, eps_b) >= 1.0:
         raise ValueError(f"bias too large at N = {N}; raise N")
 
@@ -101,18 +119,21 @@ def run_many(b, N, n_walkers, rng, Pe=0.0, split="flux"):
 if __name__ == "__main__":
     rng = np.random.default_rng(404)
 
-    N = 60
-    n_walkers = 4000
-    b_values = [1, 2, 3, 5, 10, 20]
+    N, n_walkers = 50, 3000
+    b_values = [1, 2, 3, 5, 10]
 
-    for split in ("flux", "equal"):
-        print(f"\nsplit = {split!r},  N = {N},  {n_walkers} walkers")
+    for beta_name, beta_fn in (("beta = b  (equal cross-sections)",
+                                lambda b: float(b)),
+                               ("beta = 1  (areas sum to the trunk)",
+                                lambda b: 1.0)):
+        print(f"\n{beta_name}   N = {N}, {n_walkers} walkers")
         print("mean first-passage time\n")
-        print(f"  {'Pe':>5} " + " ".join(f"{('b='+str(b)):>9}"
+        print(f"  {'Pe':>5} " + " ".join(f"{('b='+str(b)):>8}"
                                          for b in b_values))
         for Pe in (0.0, 10.0, 40.0):
             row = []
             for b in b_values:
-                _, st = run_many(b, N, n_walkers, rng, Pe=Pe, split=split)
-                row.append(lattice.to_time(st).mean())
-            print(f"  {Pe:>5.0f} " + " ".join(f"{v:>9.0f}" for v in row))
+                _, st = run_many(b, N, n_walkers, rng, Pe=Pe,
+                                 beta=beta_fn(b))
+                row.append(lattice.to_time(st, N).mean())
+            print(f"  {Pe:>5.0f} " + " ".join(f"{v:>8.3f}" for v in row))

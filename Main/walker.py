@@ -7,29 +7,26 @@ A random walk on ONE segment.
     n = 0      reflecting end  (the walker is released here)
     n = N      absorbing end   (the walker dies here)
 
-The two boundary rules are exactly the ones derived from the master
-equation:
+The two boundary rules are the ones that come out of the master equation:
 
     reflecting: a step off the end is rejected and the walker stays put.
                 It still costs one step of time.
     absorbing:  the walker is removed and we record the step count.
 
-What comes back is the number of steps each walker took. Convert to
-physical time with lattice.to_time().
+The walk itself counts STEPS and knows nothing about units. N is the
+resolution of the lattice, not the length of the segment: converting to
+physical time is lattice.to_time(steps, N), which needs N because
+dt = L^2/(2*D*N^2).
 
-Note on the exact answer. On the lattice the mean number of steps from
-n = 0 is N*(N+1), not N^2. Writing T(n) for the mean steps left from
-site n:
+Exact lattice answer, for checking: from the reflecting end the mean is
+N*(N+1) steps. Writing T(n) for the mean steps left from site n,
 
     interior:   T(n) = 1 + (T(n-1) + T(n+1))/2
     reflecting: T(0) = 1 + (T(0) + T(1))/2   ->   T(0) = 2 + T(1)
     absorbing:  T(N) = 0
 
-which solves to T(n) = N^2 + N - n^2, so T(0) = N*(N+1).
-
-In time that is N*(N+1)*a^2/(2D) = (L^2/2D) * (1 + 1/N). The continuum
-answer L^2/(2D) is the N -> infinity limit, and the 1/N gap is the
-lattice being coarse, not an error. It shrinks as N grows.
+solves to T(n) = N(N+1) - n(n+1), so T(0) = N*(N+1). In time that is
+(L^2/2D)*(1 + 1/N), and the 1/N is the lattice being coarse.
 """
 
 import numpy as np
@@ -55,7 +52,7 @@ def one_walk(N, rng):
         if n < 0:        # reflecting end: the step is rejected
             n = 0
 
-        steps += 1
+        steps = steps + 1
 
     return steps
 
@@ -65,7 +62,7 @@ def run_many(N, n_walkers, rng):
     Same walk, but all walkers are stepped together with numpy.
     Returns an array of step counts, one per walker.
     """
-    n = np.zeros(n_walkers, dtype=int)       # everyone starts at the reflecting end
+    n = np.zeros(n_walkers, dtype=int)       # everyone starts at the wall
     steps = np.zeros(n_walkers, dtype=int)
     alive = np.ones(n_walkers, dtype=bool)
 
@@ -89,22 +86,20 @@ if __name__ == "__main__":
 
     n_walkers = 20000
 
-    print(f"{n_walkers} walkers per row\n")
+    print(f"{n_walkers} walkers per row,  L = {lattice.L_DEFAULT}, "
+          f"D = {lattice.D}\n")
     print(f"  {'N':>5} {'mean steps':>12} {'exact N(N+1)':>14} "
-          f"{'mean time':>12} {'continuum':>12} {'ratio':>8}")
+          f"{'mean time':>11} {'lattice <t>':>12} {'continuum':>11}")
 
     for N in (25, 50, 100, 200):
         steps = run_many(N, n_walkers, rng)
-        exact_steps = N * (N + 1)
-        mean_time = lattice.to_time(steps.mean())
-        continuum = lattice.mfpt_segment(N)
-        print(f"  {N:>5} {steps.mean():>12.1f} {exact_steps:>14d} "
-              f"{mean_time:>12.1f} {continuum:>12.1f} "
-              f"{mean_time / continuum:>8.4f}")
+        mean_time = lattice.to_time(steps.mean(), N)
+        print(f"  {N:>5} {steps.mean():>12.1f} {N*(N+1):>14d} "
+              f"{mean_time:>11.5f} {lattice.mfpt_segment_lattice(N):>12.5f} "
+              f"{lattice.mfpt_segment(N):>11.5f}")
 
-    print("\n  measured tracks N(N+1); the ratio approaches 1 like 1 + 1/N")
+    print("\n  compare the simulation against the LATTICE column, not the")
+    print("  continuum one: the 1/N gap is real and expected.")
 
-    # the slow version should agree with the fast one
     slow = np.array([one_walk(50, rng) for _ in range(2000)])
-    print(f"\n  N=50 slow version: {slow.mean():.1f} steps  "
-          f"(exact {50*51})")
+    print(f"\n  N=50 slow version: {slow.mean():.1f} steps  (exact {50*51})")
