@@ -1,6 +1,4 @@
 """
-survival_b.py
-
 THE HEADLINE FIGURE.
 
 Claim: more branches does not keep making absorption faster. The gain
@@ -69,7 +67,7 @@ if __name__ == "__main__":
 
     N = 80
     n_walkers = 40000
-    b_values = [1, 2, 3, 5, 10, 20, 30]
+    b_values = [1, 2, 3, 5, 10, 20]
 
     tmax = 3.0
     tgrid = np.linspace(0.0, tmax, 600)
@@ -143,7 +141,7 @@ if __name__ == "__main__":
     ax2.grid(alpha=0.25, which="both")
 
     # --- right: the saturation itself
-    bfine = np.linspace(1, 32, 300)
+    bfine = np.linspace(1, 20, 300)
     ax3.plot(bfine, gamma0(bfine), color="0.45", lw=1.8,
              label=r"$\gamma_0 = \arctan^2\sqrt{b}$")
     ax3.axhline(GAMMA_MAX, color="crimson", ls="--", lw=1.4,
