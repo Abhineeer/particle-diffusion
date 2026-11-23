@@ -19,9 +19,9 @@ data = np.load("data/fig2.npz")
 b_values = list(data["b_values"])
 T = {b: data[f"T_b{b}"] for b in b_values}
 
-CDF_B = [1, 2, 3, 4, 5] # curves shown in panel (a)
-HIST_WIDTH = 0.42 # max histogram width, in units of b
-T_MAX = 7.0 # upper edge of the shared bins
+CDF_B = [1, 2, 3, 4, 5]            # curves shown in panel (a)
+HIST_WIDTH = 0.42                  # max histogram width, in units of b
+T_MAX = 7.0                        # upper edge of the shared bins
 BINS = np.linspace(0, T_MAX, 57)
 
 fig, axes = plt.subplot_mosaic([["a"], ["b"]],
@@ -37,9 +37,10 @@ for b in CDF_B:
 ax.set_xlim(0, 4)
 ax.set_ylim(0, 1.02)
 ax.set_xlabel(r"$t/\tau_D$")
-ax.set_ylabel("absorbed")
-ax.legend(frameon=False, loc="lower right", handlelength=1.2,
-          labelspacing=0.15, handletextpad=0.4, borderaxespad=0.2)
+ax.set_ylabel("probability of\nabsorption")
+ax.legend(frameon=False, loc="lower right", ncol=2, handlelength=0.9,
+          labelspacing=0.1, handletextpad=0.3, columnspacing=0.6,
+          borderaxespad=0.1)
 
 # ---------- (b) mean time vs b, with histograms ----------
 ax = axes["b"]

@@ -1,8 +1,6 @@
 """
-sim_flow.py
-
 Data for Figures 3 (equal areas) and 4 (Murray's law), and the SI grid.
-Runs b = 1, 2 at Pe = Pe_c * {1/4, 1/2, 1, 2, 4}, Pe_c from analytic.py.
+Runs b = 1, 2, 3 at Pe = Pe_c * {1/4, 1/2, 1, 2, 4}, Pe_c from analytic.py.
 N = 50: with the flow-biased junction rule the lattice error in <T> is
 about 0.02%, far below the statistical error.
 
@@ -11,19 +9,14 @@ Usage:  python sim_flow.py equal      ->  data/flow_equal.npz
 """
 
 import sys
-import os
 import numpy as np
 from star import run_star
 from analytic import beta_of, mean_T, pe_critical
 
-if len(sys.argv) > 1:
-    model = sys.argv[1]
-else:
-    model = "equal"          # default when run with the play button
-
+model = sys.argv[1]
 N = 50
-N_WALKERS = 20_000
-B_VALUES = [1, 2]
+N_WALKERS = 50_000
+B_VALUES = [1, 2, 3, 4, 5]
 PE_FACTORS = [0.25, 0.5, 1.0, 2.0, 4.0]
 
 pe_c = pe_critical(2, model)
